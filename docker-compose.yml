@@ -1,0 +1,41 @@
+services:
+  localstack:
+    container_name: localstack-05
+    image: localstack/localstack:4.1.0
+    ports:
+      - "127.0.0.1:4566:4566"
+      - "127.0.0.1:4510-4559:4510-4559"
+    environment:
+      SERVICES: iam,lambda,apigateway,dynamodb,ssm,sts,s3
+      DEBUG: 1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_REGION: us-east-1
+      PERSISTENCE: 1
+    volumes:
+      - ./infra/local/localstack/.localstack:/var/lib/localstack
+      - "/var/run/docker.sock:/var/run/docker.sock"
+  motoserver:
+    container_name: moto-server-05
+    image: motoserver/moto:latest
+    ports:
+      - "5000:5000"
+    environment:
+      AWS_ACCESS_KEY_ID: testing
+      AWS_SECRET_ACCESS_KEY: testing
+      AWS_DEFAULT_REGION: us-east-1
+      MOTO_PORT: 5000
+    depends_on:
+      - localstack
+  dynamodb-admin:
+    image: aaronshaf/dynamodb-admin:latest
+    container_name: dynamodb-viewer-05
+    ports:
+      - "8001:8001"
+    environment:
+      DYNAMO_ENDPOINT: http://localstack:4566
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+    depends_on:
+      - "localstack"      

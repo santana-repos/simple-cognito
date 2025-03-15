@@ -1,0 +1,7 @@
+infra/local/localstack/.localstack
+infra/local/terraform/.terraform*
+infra/local/terraform/terraform.tfstate.backup*
+infra/local/terraform/terraform.tfstate.*.backup
+backend/lambda-app/node_modules
+backend/lambda-app/coverage
+lambda-app.zip
