@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - My Website</title>
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Welcome to Your Dashboard</h1>
+        <nav>
+            <ul>
+                <li><a href="landing-page.html">Dashboard</a></li>
+                <li><a href="../../pages/anonymous/contacts.html">Contact Us</a></li>
+                <li><a href="#" id="logout-link">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div id="app-container">
+            <h2>Welcome, <span id="user-name"></span>!</h2>
+            <p>This is your personal dashboard. Only authenticated users can see this page.</p>
+            
+            <div id="user-content">
+                <h3>Your Profile</h3>
+                <p>Username: <span id="profile-username"></span></p>
+                <p>Role: <span id="profile-role"></span></p>
+            </div>
+            
+            <div id="dashboard-content">
+                <h3>Dashboard Content</h3>
+                <p>This is some personalized content for you.</p>
+                <ul>
+                    <li>Feature 1: Lorem ipsum dolor sit amet</li>
+                    <li>Feature 2: Consectetur adipiscing elit</li>
+                    <li>Feature 3: Sed do eiusmod tempor incididunt</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 My Website. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            const token = localStorage.getItem('token');
+            const username = localStorage.getItem('username');
+            const role = localStorage.getItem('role');
+            
+            if (!token) {
+                // Redirect to login page if not logged in
+                window.location.href = '../../index.html';
+                return;
+            }
+            
+            // Display user information
+            document.getElementById('user-name').textContent = username;
+            document.getElementById('profile-username').textContent = username;
+            document.getElementById('profile-role').textContent = role;
+            
+            // Handle logout
+            document.getElementById('logout-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Clear localStorage
+                localStorage.removeItem('token');
+                localStorage.removeItem('username');
+                localStorage.removeItem('role');
+                
+                // Redirect to login page
+                window.location.href = '../../index.html';
+            });
+        });
+    </script>
+</body>
+</html>

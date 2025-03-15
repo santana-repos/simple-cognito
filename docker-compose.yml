@@ -25,6 +25,10 @@ services:
       AWS_SECRET_ACCESS_KEY: testing
       AWS_DEFAULT_REGION: us-east-1
       MOTO_PORT: 5000
+      MOTO_ENABLE_RECORDING: "True"
+      MOTO_RECORDER_FILEPATH: "/moto/recordings/moto_recording"
+    volumes:
+      - ./infra/local/moto-server/moto_recording:/moto/recordings/moto_recording
     depends_on:
       - localstack
   dynamodb-admin:

@@ -4,8 +4,12 @@
     "main": "index.js",
     "type": "module",
     "scripts": {
+      "test": "jest",
+      "build": "zip -r ../../../lambda-app.zip ."
     },
     "dependencies": {
+      "@aws-sdk/client-cognito-identity-provider": "^3.414.0",
+      "@aws-sdk/client-dynamodb": "^3.414.0",
       "axios": "^1.7.9",
       "debug": "^4.3.4",
       "express": "^4.21.2",

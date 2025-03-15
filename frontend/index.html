@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - My Website</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Welcome to My Website</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="pages/anonymous/contacts.html">Contact Us</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div id="auth-container">
+            <h2>Login</h2>
+            <form id="login-form">
+                <div>
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div>
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit">Login</button>
+            </form>
+            <div id="login-message"></div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 My Website. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is already logged in
+            const token = localStorage.getItem('token');
+            const role = localStorage.getItem('role');
+            
+            if (token) {
+                // Redirect to appropriate page based on role
+                if (role === 'admin') {
+                    window.location.href = 'pages/admin/admin-area.html';
+                } else {
+                    window.location.href = 'pages/logged/landing-page.html';
+                }
+            }
+            
+            // Handle login form submission
+            document.getElementById('login-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const messageElement = document.getElementById('login-message');
+                
+                try {
+                    // Replace with your Lambda function URL
+                    const response = await fetch('http://localhost:4566/lambda/user-management/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ username, password })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        // Store token and user info in localStorage
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('username', data.username);
+                        localStorage.setItem('role', data.role);
+                        
+                        // Redirect based on role
+                        if (data.role === 'admin') {
+                            window.location.href = 'pages/admin/admin-area.html';
+                        } else {
+                            window.location.href = 'pages/logged/landing-page.html';
+                        }
+                    } else {
+                        messageElement.textContent = data.message || 'Login failed';
+                        messageElement.style.color = 'red';
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    messageElement.textContent = 'An error occurred. Please try again.';
+                    messageElement.style.color = 'red';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

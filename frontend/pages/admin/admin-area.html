@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Area - My Website</title>
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+        }
+        
+        .user-form {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .edit-form {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Admin Area</h1>
+        <nav>
+            <ul>
+                <li><a href="admin-area.html">Admin Dashboard</a></li>
+                <li><a href="../logged/landing-page.html">User Dashboard</a></li>
+                <li><a href="#" id="logout-link">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div id="app-container">
+            <h2>User Management</h2>
+            <p>Welcome to the admin area. Here you can manage all users.</p>
+            
+            <div id="user-management">
+                <h3>Users List</h3>
+                <button id="refresh-users">Refresh Users</button>
+                <table id="users-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-list">
+                        <!-- Users will be loaded here -->
+                    </tbody>
+                </table>
+                
+                <div class="user-form" id="create-user-form">
+                    <h3>Create New User</h3>
+                    <form id="new-user-form">
+                        <div>
+                            <label for="new-username">Username:</label>
+                            <input type="text" id="new-username" name="username" required>
+                        </div>
+                        <div>
+                            <label for="new-email">Email:</label>
+                            <input type="email" id="new-email" name="email" required>
+                        </div>
+                        <div>
+                            <label for="new-password">Password:</label>
+                            <input type="password" id="new-password" name="password" required>
+                        </div>
+                        <div>
+                            <label for="new-role">Role:</label>
+                            <select id="new-role" name="role" required>
+                                <option value="user">User</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <button type="submit">Create User</button>
+                    </form>
+                </div>
+                
+                <div class="user-form edit-form" id="edit-user-form">
+                    <h3>Edit User</h3>
+                    <form id="edit-user-form">
+                        <input type="hidden" id="edit-username" name="username">
+                        <div>
+                            <label for="edit-email">Email:</label>
+                            <input type="email" id="edit-email" name="email" required>
+                        </div>
+                        <div>
+                            <label for="edit-role">Role:</label>
+                            <select id="edit-role" name="role" required>
+                                <option value="user">User</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <button type="submit">Update User</button>
+                        <button type="button" id="cancel-edit">Cancel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 My Website. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in and is admin
+            const token = localStorage.getItem('token');
+            const username = localStorage.getItem('username');
+            const role = localStorage.getItem('role');
+            
+            if (!token || role !== 'admin') {
+                // Redirect to login page if not logged in or not admin
+                window.location.href = '../../index.html';
+                return;
+            }
+            
+            // Function to load users
+            async function loadUsers() {
+                try {
+                    const response = await fetch('http://localhost:4566/lambda/user-management/users', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to load users');
+                    }
+                    
+                    const users = await response.json();
+                    const usersList = document.getElementById('users-list');
+                    usersList.innerHTML = '';
+                    
+                    users.forEach(user => {
+                        const row = document.createElement('tr');
+                        
+                        const usernameCell = document.createElement('td');
+                        usernameCell.textContent = user.username;
+                        row.appendChild(usernameCell);
+                        
+                        const emailCell = document.createElement('td');
+                        emailCell.textContent = user.email;
+                        row.appendChild(emailCell);
+                        
+                        const roleCell = document.createElement('td');
+                        roleCell.textContent = user.role;
+                        row.appendChild(roleCell);
+                        
+                        const actionsCell = document.createElement('td');
+                        
+                        // Edit button
+                        const editButton = document.createElement('button');
+                        editButton.textContent = 'Edit';
+                        editButton.addEventListener('click', () => {
+                            // Populate edit form
+                            document.getElementById('edit-username').value = user.username;
+                            document.getElementById('edit-email').value = user.email;
+                            document.getElementById('edit-role').value = user.role;
+                            
+                            // Show edit form
+                            document.getElementById('edit-user-form').style.display = 'block';
+                        });
+                        actionsCell.appendChild(editButton);
+                        
+                        // Delete button (disabled for admin user)
+                        const deleteButton = document.createElement('button');
+                        deleteButton.textContent = 'Delete';
+                        deleteButton.style.marginLeft = '5px';
+                        
+                        if (user.username === 'admin') {
+                            deleteButton.disabled = true;
+                            deleteButton.title = 'Cannot delete admin user';
+                        } else {
+                            deleteButton.addEventListener('click', async () => {
+                                if (confirm(`Are you sure you want to delete user ${user.username}?`)) {
+                                    try {
+                                        const response = await fetch(`http://localhost:4566/lambda/user-management/users/${user.username}`, {
+                                            method: 'DELETE',
+                                            headers: {
+                                                'Authorization': `Bearer ${token}`
+                                            }
+                                        });
+                                        
+                                        if (!response.ok) {
+                                            throw new Error('Failed to delete user');
+                                        }
+                                        
+                                        alert('User deleted successfully');
+                                        loadUsers(); // Reload users
+                                    } catch (error) {
+                                        console.error('Error:', error);
+                                        alert('Failed to delete user');
+                                    }
+                                }
+                            });
+                        }
+                        
+                        actionsCell.appendChild(deleteButton);
+                        row.appendChild(actionsCell);
+                        
+                        usersList.appendChild(row);
+                    });
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to load users');
+                }
+            }
+            
+            // Load users on page load
+            loadUsers();
+            
+            // Refresh users button
+            document.getElementById('refresh-users').addEventListener('click', loadUsers);
+            
+            // Create user form
+            document.getElementById('new-user-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('new-username').value;
+                const email = document.getElementById('new-email').value;
+                const password = document.getElementById('new-password').value;
+                const role = document.getElementById('new-role').value;
+                
+                try {
+                    const response = await fetch('http://localhost:4566/lambda/user-management/users', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ username, email, password, role })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to create user');
+                    }
+                    
+                    alert('User created successfully');
+                    this.reset();
+                    loadUsers(); // Reload users
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to create user');
+                }
+            });
+            
+            // Edit user form
+            document.getElementById('edit-user-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('edit-username').value;
+                const email = document.getElementById('edit-email').value;
+                const role = document.getElementById('edit-role').value;
+                
+                try {
+                    const response = await fetch(`http://localhost:4566/lambda/user-management/users/${username}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ email, role })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to update user');
+                    }
+                    
+                    alert('User updated successfully');
+                    document.getElementById('edit-user-form').style.display = 'none';
+                    loadUsers(); // Reload users
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to update user');
+                }
+            });
+            
+            // Cancel edit button
+            document.getElementById('cancel-edit').addEventListener('click', function() {
+                document.getElementById('edit-user-form').style.display = 'none';
+            });
+            
+            // Handle logout
+            document.getElementById('logout-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Clear localStorage
+                localStorage.removeItem('token');
+                localStorage.removeItem('username');
+                localStorage.removeItem('role');
+                
+                // Redirect to login page
+                window.location.href = '../../index.html';
+            });
+        });
+    </script>
+</body>
+</html>
