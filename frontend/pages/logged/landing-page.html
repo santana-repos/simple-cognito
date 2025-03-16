@@ -48,7 +48,7 @@
     </footer>
 
     <script>
-        const backendApiBaseUrl = BackendApiConfig.getBackendApiBaseUrl();
+        const backendApiBaseUrl = localStorage.getItem('api-base-url');
         console.log("Backend API base URL:", backendApiBaseUrl);
         
         document.addEventListener('DOMContentLoaded', function() {

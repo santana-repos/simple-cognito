@@ -7,9 +7,6 @@
     <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
     <link rel="stylesheet" href="assets/css/styles.css">
     <script src="assets/js/scripts.js" ></script>
-    <script>
-        BackendApiConfig.setBackendApiBaseUrl("${backendApiBaseUrl}");
-    </script>
 </head>
 <body>
     <header>
@@ -45,13 +42,19 @@
     </footer>
 
     <script>
-        const backendApiBaseUrl = BackendApiConfig.getBackendApiBaseUrl();
-        console.log("Backend API base URL:", backendApiBaseUrl);
-        
         document.addEventListener('DOMContentLoaded', function() {
+            //TODO: implement secure login blueprints
+
             // Check if user is already logged in
             const token = localStorage.getItem('token');
             const role = localStorage.getItem('role');
+
+            // server-side variable
+            const backendApiBaseUrl = "${backendApiBaseUrl}".slice(0, -1);
+            if (backendApiBaseUrl) {
+                console.log(`Backend API base URL: ${backendApiBaseUrl}`);
+                localStorage.setItem('api-base-url', backendApiBaseUrl);
+            }
             
             if (token) {
                 // Redirect to appropriate page based on role
