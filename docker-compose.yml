@@ -6,7 +6,7 @@ services:
       - "127.0.0.1:4566:4566"
       - "127.0.0.1:4510-4559:4510-4559"
     environment:
-      SERVICES: iam,lambda,apigateway,dynamodb,ssm,sts,s3
+      SERVICES: logs,cloudwatch,iam,lambda,dynamodb,ssm,sts,s3
       DEBUG: 1
       AWS_ACCESS_KEY_ID: test
       AWS_SECRET_ACCESS_KEY: test
@@ -21,8 +21,8 @@ services:
     ports:
       - "5000:5000"
     environment:
-      AWS_ACCESS_KEY_ID: testing
-      AWS_SECRET_ACCESS_KEY: testing
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
       AWS_DEFAULT_REGION: us-east-1
       MOTO_PORT: 5000
       MOTO_ENABLE_RECORDING: "True"

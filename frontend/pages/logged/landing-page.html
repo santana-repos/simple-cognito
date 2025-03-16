@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome - My Website</title>
-    <link rel="stylesheet" href="../../assets/css/styles.css">
+    <link rel="stylesheet" href="./../../assets/css/styles.css">
+    <script src="./../../assets/js/scripts.js" ></script>
 </head>
 <body>
     <header>
@@ -26,6 +27,7 @@
             <div id="user-content">
                 <h3>Your Profile</h3>
                 <p>Username: <span id="profile-username"></span></p>
+                <p>Email: <span id="profile-email"></span></p>
                 <p>Role: <span id="profile-role"></span></p>
             </div>
             
@@ -42,10 +44,13 @@
     </main>
 
     <footer>
-        <p>&copy; 2023 My Website. All rights reserved.</p>
+        <p>&copy; 2025 My Website. All rights reserved.</p>
     </footer>
 
     <script>
+        const backendApiBaseUrl = BackendApiConfig.getBackendApiBaseUrl();
+        console.log("Backend API base URL:", backendApiBaseUrl);
+        
         document.addEventListener('DOMContentLoaded', function() {
             // Check if user is logged in
             const token = localStorage.getItem('token');
@@ -58,10 +63,37 @@
                 return;
             }
             
-            // Display user information
+            // Display user information from localStorage
             document.getElementById('user-name').textContent = username;
             document.getElementById('profile-username').textContent = username;
             document.getElementById('profile-role').textContent = role;
+            
+            // Fetch user profile from API
+            async function fetchProfile() {
+                try {
+                    const response = await fetch(`${backendApiBaseUrl}/profile`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch profile');
+                    }
+                    
+                    const profile = await response.json();
+                    
+                    // Update profile information
+                    document.getElementById('profile-email').textContent = profile.email || 'Not available';
+                } catch (error) {
+                    console.error('Error:', error);
+                    document.getElementById('profile-email').textContent = 'Error loading email';
+                }
+            }
+            
+            // Fetch profile data
+            fetchProfile();
             
             // Handle logout
             document.getElementById('logout-link').addEventListener('click', function(e) {

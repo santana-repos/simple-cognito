@@ -1,4 +1,3 @@
-# Upload frontend files to S3 bucket
 locals {
   mime_types = {
     "html" = "text/html"
@@ -10,74 +9,31 @@ locals {
     "svg"  = "image/svg+xml"
     "ico"  = "image/x-icon"
   }
-  
   frontend_dir = "${path.module}/../../../frontend"
 }
 
-# Upload index.html
-resource "aws_s3_object" "index_html" {
+resource "aws_s3_object" "object_assets_css" {
+  for_each     = fileset("../../../frontend/assets/css/", "*")
   bucket       = aws_s3_bucket.website_bucket.id
-  key          = "index.html"
-  source       = "${local.frontend_dir}/index.html"
-  content_type = lookup(local.mime_types, "html")
-  etag         = filemd5("${local.frontend_dir}/index.html")
+  key          = "./assets/css/${each.value}"
+  source       = "../../../frontend/assets/css/${each.value}"
+  etag         = filemd5("../../../frontend/assets/css/${each.value}")
+  content_type = "text/css"
+  acl          = "public-read"
+  depends_on   = [aws_s3_bucket.website_bucket]
 }
 
-# Upload error.html
-resource "aws_s3_object" "error_html" {
+resource "aws_s3_object" "object_assets_js" {
+  for_each     = fileset("../../../frontend/assets/js/", "*")
   bucket       = aws_s3_bucket.website_bucket.id
-  key          = "error.html"
-  source       = "${local.frontend_dir}/error.html"
-  content_type = lookup(local.mime_types, "html")
-  etag         = filemd5("${local.frontend_dir}/error.html")
+  key          = "./assets/js/${each.value}"
+  source       = "../../../frontend/assets/js/${each.value}"
+  etag         = filemd5("../../../frontend/assets/js/${each.value}")
+  content_type = "application/javascript"
+  acl          = "public-read"
+  depends_on   = [aws_s3_bucket.website_bucket]
 }
 
-# Upload CSS files
-resource "aws_s3_object" "css_files" {
-  bucket       = aws_s3_bucket.website_bucket.id
-  key          = "assets/css/styles.css"
-  source       = "${local.frontend_dir}/assets/css/styles.css"
-  content_type = lookup(local.mime_types, "css")
-  etag         = filemd5("${local.frontend_dir}/assets/css/styles.css")
-}
-
-# Upload JS files
-resource "aws_s3_object" "js_files" {
-  bucket       = aws_s3_bucket.website_bucket.id
-  key          = "assets/js/scripts.js"
-  source       = "${local.frontend_dir}/assets/js/scripts.js"
-  content_type = lookup(local.mime_types, "js")
-  etag         = filemd5("${local.frontend_dir}/assets/js/scripts.js")
-}
-
-# Upload anonymous pages
-resource "aws_s3_object" "contacts_html" {
-  bucket       = aws_s3_bucket.website_bucket.id
-  key          = "pages/anonymous/contacts.html"
-  source       = "${local.frontend_dir}/pages/anonymous/contacts.html"
-  content_type = lookup(local.mime_types, "html")
-  etag         = filemd5("${local.frontend_dir}/pages/anonymous/contacts.html")
-}
-
-# Upload logged-in user pages
-resource "aws_s3_object" "landing_page_html" {
-  bucket       = aws_s3_bucket.website_bucket.id
-  key          = "pages/logged/landing-page.html"
-  source       = "${local.frontend_dir}/pages/logged/landing-page.html"
-  content_type = lookup(local.mime_types, "html")
-  etag         = filemd5("${local.frontend_dir}/pages/logged/landing-page.html")
-}
-
-# Upload admin pages
-resource "aws_s3_object" "admin_area_html" {
-  bucket       = aws_s3_bucket.website_bucket.id
-  key          = "pages/admin/admin-area.html"
-  source       = "${local.frontend_dir}/pages/admin/admin-area.html"
-  content_type = lookup(local.mime_types, "html")
-  etag         = filemd5("${local.frontend_dir}/pages/admin/admin-area.html")
-}
-
-# Upload logo if it exists
 resource "aws_s3_object" "logo_svg" {
   count        = fileexists("${local.frontend_dir}/assets/images/logo.svg") ? 1 : 0
   bucket       = aws_s3_bucket.website_bucket.id
@@ -86,3 +42,70 @@ resource "aws_s3_object" "logo_svg" {
   content_type = lookup(local.mime_types, "svg")
   etag         = filemd5("${local.frontend_dir}/assets/images/logo.svg")
 } 
+
+resource "aws_s3_object" "favicon_ico" {
+  count        = fileexists("${local.frontend_dir}/assets/images/favicon.ico") ? 1 : 0
+  bucket       = aws_s3_bucket.website_bucket.id
+  key          = "assets/images/favicon.ico"
+  source       = "${local.frontend_dir}/assets/images/favicon.ico"
+  content_type = lookup(local.mime_types, "ico")
+  etag         = filemd5("${local.frontend_dir}/assets/images/favicon.ico")
+}
+
+resource "aws_s3_object" "error_html" {
+  bucket       = aws_s3_bucket.website_bucket.id
+  key          = "error.html"
+  source       = "${local.frontend_dir}/error.html"
+  content_type = lookup(local.mime_types, "html")
+  etag         = filemd5("${local.frontend_dir}/error.html")
+}
+
+resource "aws_s3_object" "object_www_pages_admin" {
+  for_each     = fileset("../../../frontend/pages/admin/", "*")
+  bucket       = aws_s3_bucket.website_bucket.id
+  key          = "./pages/admin/${each.value}"
+  source       = "../../../frontend/pages/admin/${each.value}"
+  etag         = filemd5("../../../frontend/pages/admin/${each.value}")
+  content_type = "text/html"
+  acl          = "public-read"
+  depends_on   = [aws_s3_bucket.website_bucket]
+}
+
+resource "aws_s3_object" "object_www_pages_anonymous" {
+  for_each     = fileset("../../../frontend/pages/anonymous/", "*")
+  bucket       = aws_s3_bucket.website_bucket.id
+  key          = "./pages/anonymous/${each.value}"
+  source       = "../../../frontend/pages/anonymous/${each.value}"
+  etag         = filemd5("../../../frontend/pages/anonymous/${each.value}")
+  content_type = "text/html"
+  acl          = "public-read"
+  depends_on   = [aws_s3_bucket.website_bucket]
+}
+
+resource "aws_s3_object" "object_www_pages_logged" {
+  for_each     = fileset("../../../frontend/pages/logged/", "*")
+  bucket       = aws_s3_bucket.website_bucket.id
+  key          = "./pages/logged/${each.value}"
+  source       = "../../../frontend/pages/logged/${each.value}"
+  etag         = filemd5("../../../frontend/pages/logged/${each.value}")
+  content_type = "text/html"
+  acl          = "public-read"
+  depends_on   = [aws_s3_bucket.website_bucket]
+}
+
+resource "aws_s3_object" "object_www_index" {
+  bucket       = aws_s3_bucket.website_bucket.id
+  key          = "index.html"
+  content      = templatefile(
+    "../../../frontend/templates/template-index.html",
+    {
+      backendApiBaseUrl = aws_lambda_function_url.user_management_url.function_url
+    }
+  )
+  content_type = "text/html"
+  acl          = "public-read"
+  depends_on   = [
+    aws_lambda_function_url.user_management_url,
+    aws_s3_object.object_assets_js
+  ]
+}

@@ -4,7 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - My Website</title>
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
     <link rel="stylesheet" href="assets/css/styles.css">
+    <script src="assets/js/scripts.js" ></script>
+    <script>
+        BackendApiConfig.setBackendApiBaseUrl("${backendApiBaseUrl}");
+    </script>
 </head>
 <body>
     <header>
@@ -36,10 +41,13 @@
     </main>
 
     <footer>
-        <p>&copy; 2023 My Website. All rights reserved.</p>
+        <p>&copy; 2025 My Website. All rights reserved.</p>
     </footer>
 
     <script>
+        const backendApiBaseUrl = BackendApiConfig.getBackendApiBaseUrl();
+        console.log("Backend API base URL:", backendApiBaseUrl);
+        
         document.addEventListener('DOMContentLoaded', function() {
             // Check if user is already logged in
             const token = localStorage.getItem('token');
@@ -62,9 +70,12 @@
                 const password = document.getElementById('password').value;
                 const messageElement = document.getElementById('login-message');
                 
+                // Clear previous messages
+                messageElement.textContent = 'Logging in...';
+                messageElement.style.color = 'blue';
+                
                 try {
-                    // Replace with your Lambda function URL
-                    const response = await fetch('http://localhost:4566/lambda/user-management/auth/login', {
+                    const response = await fetch(`${backendApiBaseUrl}/auth/login`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -72,27 +83,44 @@
                         body: JSON.stringify({ username, password })
                     });
                     
-                    const data = await response.json();
+                    console.log("Response status:", response.status);
+                    console.log("Response headers:", response.headers);
                     
-                    if (response.ok) {
-                        // Store token and user info in localStorage
-                        localStorage.setItem('token', data.token);
-                        localStorage.setItem('username', data.username);
-                        localStorage.setItem('role', data.role);
-                        
-                        // Redirect based on role
+                    // Check if response is empty
+                    const responseText = await response.text();
+                    console.log("Response text:", responseText);
+                    
+                    if (!responseText || responseText.trim() === '') {
+                        throw new Error('Empty response from server');
+                    }
+                    
+                    // Parse the response
+                    const data = JSON.parse(responseText);
+                    console.log("Parsed data:", data);
+                    
+                    if (!data.token) {
+                        throw new Error('Invalid response: missing token');
+                    }
+                    
+                    // Store token and user info in localStorage
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('username', data.username);
+                    localStorage.setItem('role', data.role);
+                    
+                    messageElement.textContent = 'Login successful! Redirecting...';
+                    messageElement.style.color = 'green';
+                    
+                    // Redirect based on role
+                    setTimeout(() => {
                         if (data.role === 'admin') {
                             window.location.href = 'pages/admin/admin-area.html';
                         } else {
                             window.location.href = 'pages/logged/landing-page.html';
                         }
-                    } else {
-                        messageElement.textContent = data.message || 'Login failed';
-                        messageElement.style.color = 'red';
-                    }
+                    }, 1000);
                 } catch (error) {
                     console.error('Error:', error);
-                    messageElement.textContent = 'An error occurred. Please try again.';
+                    messageElement.textContent = error.message || 'An error occurred. Please try again.';
                     messageElement.style.color = 'red';
                 }
             });

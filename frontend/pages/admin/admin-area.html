@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Area - My Website</title>
-    <link rel="stylesheet" href="../../assets/css/styles.css">
+    <link rel="stylesheet" href="./../../assets/css/styles.css">
+    <script src="./../../assets/js/scripts.js" ></script>
     <style>
         table {
             width: 100%;
@@ -121,10 +122,13 @@
     </main>
 
     <footer>
-        <p>&copy; 2023 My Website. All rights reserved.</p>
+        <p>&copy; 2025 My Website. All rights reserved.</p>
     </footer>
 
     <script>
+        const backendApiBaseUrl = BackendApiConfig.getBackendApiBaseUrl();
+        console.log("Backend API base URL:", backendApiBaseUrl);
+        
         document.addEventListener('DOMContentLoaded', function() {
             // Check if user is logged in and is admin
             const token = localStorage.getItem('token');
@@ -140,7 +144,7 @@
             // Function to load users
             async function loadUsers() {
                 try {
-                    const response = await fetch('http://localhost:4566/lambda/user-management/users', {
+                    const response = await fetch(`${backendApiBaseUrl}/users`, {
                         method: 'GET',
                         headers: {
                             'Authorization': `Bearer ${token}`
@@ -198,7 +202,7 @@
                             deleteButton.addEventListener('click', async () => {
                                 if (confirm(`Are you sure you want to delete user ${user.username}?`)) {
                                     try {
-                                        const response = await fetch(`http://localhost:4566/lambda/user-management/users/${user.username}`, {
+                                        const response = await fetch(`${backendApiBaseUrl}/users/${user.username}`, {
                                             method: 'DELETE',
                                             headers: {
                                                 'Authorization': `Bearer ${token}`
@@ -230,7 +234,7 @@
                 }
             }
             
-            // Load users on page load
+            // Load users when page loads
             loadUsers();
             
             // Refresh users button
@@ -246,7 +250,7 @@
                 const role = document.getElementById('new-role').value;
                 
                 try {
-                    const response = await fetch('http://localhost:4566/lambda/user-management/users', {
+                    const response = await fetch(`${backendApiBaseUrl}/users`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -277,7 +281,7 @@
                 const role = document.getElementById('edit-role').value;
                 
                 try {
-                    const response = await fetch(`http://localhost:4566/lambda/user-management/users/${username}`, {
+                    const response = await fetch(`${backendApiBaseUrl}/users/${username}`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
